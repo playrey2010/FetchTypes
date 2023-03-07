@@ -6,8 +6,9 @@ import com.example.hibernate.demo.entity.InstructorDetail;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.query.Query;
 
-public class EagerLazyDemo {
+public class FetchJoinDemo {
     public static void main(String[] args) {
 
         // create session factory
@@ -29,12 +30,19 @@ public class EagerLazyDemo {
 
             // get the instructor from database
             int instructorPK = 1;
-            Instructor instructor = session.get(Instructor.class, instructorPK);
+            // option 2: using Hibernate queries with HQL
+            Query<Instructor> query = session.createQuery("select i from Instructor i "
+                                                                + "JOIN FETCH i.courses "
+                                                                + "where i.id=:theInstructorId",
+                                                                Instructor.class);
+            // set parameter on query
+            query.setParameter("theInstructorId", instructorPK);
+            // execute query and get instructor
+            Instructor instructor = query.getSingleResult();
+
             System.out.println("example: Instructor retrieved: " + instructor);
 
-            // option 1: call getter method while session is still open
-            // show courses
-            System.out.println("example: Courses: " + instructor.getCourses());
+
 
             // commit transaction
             session.getTransaction().commit();
